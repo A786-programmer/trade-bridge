@@ -14,11 +14,14 @@
                         <a class="nav-link dropdown-toggle arrow-none waves-effect nav-user" data-toggle="dropdown" href="javascript:void(0)" role="button"
                             aria-haspopup="false" aria-expanded="false">
                             <img src="logo.png" alt="user" class="rounded-circle">
-                            <span class="ml-2 d-none d-sm-inline-block">USERNAME</span>
+                            <span class="ml-2 d-none d-sm-inline-block">
+                                <?= isset($fetchUser['u_username']) ? htmlspecialchars($fetchUser['u_username']) : 'Guest' ?>
+                            </span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right profile-dropdown border-0">
                             <div class="dropdown-item noti-title">
-                                <h5>Welcome USERNAME</h5>
+                                <h5>Welcome <?=htmlspecialchars($fetchUser['u_name'])?></h5>
+                                <span><?=$currentDate?></span>
                             </div>
                             <!-- <a class="dropdown-item" href="index.php">
                                 <i class="mdi mdi-settings m-r-5 text-muted"></i> Settings
@@ -50,20 +53,29 @@
                 <ul class="navigation-menu">
                     <li class="has-submenu">
                         <a href="import.php"><i class="dripicons-blog"></i>Import</a>
-                    </li>
-                    <li class="has-submen">
-                        <a href="export.php"><i class="dripicons-blog"></i>Export</a>
-                    </li>
-                    <li class="has-submen">
-                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Bulk Data</a>
-                    </li>
-                    <li class="has-submen">
-                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Air Freight/Import</a>
-                    </li>
-                    <li class="has-submen">
-                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Air Freight/Export</a>
+                        <ul class="submenu">
+                            <li class="has-submenu">
+                                <a href="javascript:void(0)">Ranking By</a>
+                                <ul class="submenu">
+                                    <li><a href="form-advanced.html">Form Advanced</a></li>
+                                    <li><a href="form-elements.html">Form Elements</a></li>
+                                </ul>
+                            </li>
+                        </ul>
                     </li>
                     <li class="has-submenu">
+                        <a href="export.php"><i class="dripicons-blog"></i>Export</a>
+                    </li>
+                    <li class="">
+                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Bulk Data</a>
+                    </li>
+                    <li class="">
+                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Air Freight/Import</a>
+                    </li>
+                    <li class="">
+                        <a href="javascript:void(0)"><i class="dripicons-blog"></i>Air Freight/Export</a>
+                    </li>
+                    <li class="u">
                         <a href="create-account.php"><i class="dripicons-to-do"></i>Create Account</a>
                     </li>
                 </ul>

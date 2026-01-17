@@ -50,6 +50,93 @@
                 exit();
             }
         }
+        if (isset($_POST['delete_user'])) {
+            try {
+                $userId = $_POST['user_id'];
+
+                $deletePermissions = mysqli_query($con,"DELETE FROM user_permissions WHERE up_user = $userId");
+
+                $deleteUser = mysqli_query($con,"DELETE FROM users WHERE u_id = $userId");
+                $_SESSION['toastr_message'] = "User deleted successfully!";
+                $_SESSION['toastr_type'] = "success";
+
+            } catch (Exception $e) {
+
+                $_SESSION['toastr_message'] = "Delete failed: " . $e->getMessage();
+                $_SESSION['toastr_type'] = "error";
+            }
+
+            header("Location: create-account.php");
+            exit();
+        }
+        $userID = isset($_GET['userID']) ? $_GET['userID'] : 0;
+        $userQuery = mysqli_query($con, "SELECT * FROM users WHERE u_id='$userID'");
+        if ($userID && mysqli_num_rows($userQuery) == 0) {
+                $_SESSION['toastr_message'] = "Invalid Access!";
+                $_SESSION['toastr_type'] = "error";
+                header("Location: users.php");
+                exit();
+            }
+        $fetchsuerData = mysqli_fetch_assoc($userQuery);
+        $permQuery = mysqli_query($con, "SELECT * FROM user_permissions WHERE up_user='$userID'");
+        $permissions = [];
+        while ($p = mysqli_fetch_assoc($permQuery)) {
+            $permissions[$p['up_type']] = $p;
+        }
+
+        // Handle update
+        if (isset($_POST['update'])) {
+            $name = $_POST['name'];
+            $email = $_POST['email'];
+            $username = $_POST['username'];
+            $password = $_POST['password'];
+            $clientip1 = $_POST['clientip1'];
+            $clientip2 = $_POST['clientip2'];
+            $clientip3 = $_POST['clientip3'];
+            $clientip4 = $_POST['clientip4'];
+            $company = $_POST['company'];
+            $telephone = $_POST['telephone'];
+            $address = $_POST['address'];
+
+            mysqli_query($con, "UPDATE users SET 
+                u_name='$name',
+                u_email='$email',
+                u_username='$username',
+                u_password='$password',
+                u_company='$company',
+                u_telephone='$telephone',
+                u_address='$address',
+                u_client_ip_1='$clientip1',
+                u_client_ip_2='$clientip2',
+                u_client_ip_3='$clientip3',
+                u_client_ip_4='$clientip4'
+                WHERE u_id='$userID'
+            ");
+
+            // Update permissions
+            mysqli_query($con,"DELETE FROM user_permissions WHERE up_user='$userID'");
+
+            if (isset($_POST['importavailability'])) {
+                $print = isset($_POST['importprint']) ? '1' : '0';
+                $importfrom = $_POST['importfrom'];
+                $importil = $_POST['importil'];
+                mysqli_query($con, "INSERT INTO `user_permissions` (up_type, up_from, up_till, up_print, up_user) 
+                    VALUES ('Import', '$importfrom', '$importil', '$print', '$userID')");
+            }
+
+            if (isset($_POST['exportavailability'])) {
+                $print = isset($_POST['exportprint']) ? '1' : '0';
+                $exportfrom = $_POST['exportfrom'];
+                $exportil = $_POST['exportil'];
+                mysqli_query($con, "INSERT INTO `user_permissions` (up_type, up_from, up_till, up_print, up_user) 
+                    VALUES ('Export', '$exportfrom', '$exportil', '$print', '$userID')");
+            }
+
+            $_SESSION['toastr_message'] = "User Updated Successfully!";
+            $_SESSION['toastr_type'] = "success";
+            header("Location: create-account.php");
+            exit();
+        }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,47 +165,47 @@
                                         <!-- Row 1 -->
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Name</label>
-                                            <input required type="text" class="form-control" name="name"/>
+                                            <input  type="text" class="form-control" name="name" value="<?= htmlspecialchars($fetchsuerData['u_name']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">E-mail</label>
-                                            <input required type="email" class="form-control" name="email"/>
+                                            <input  type="email" class="form-control" name="email" value="<?= htmlspecialchars($fetchsuerData['u_email']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Username</label>
-                                            <input required type="text" class="form-control" name="username"/>
+                                            <input  type="text" class="form-control" name="username" value="<?= htmlspecialchars($fetchsuerData['u_username']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Password</label>
-                                            <input required type="text" class="form-control" name="password"/>
+                                            <input  type="text" class="form-control" name="password" value="<?= htmlspecialchars($fetchsuerData['u_password']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Client IP 1</label>
-                                            <input required type="text" class="form-control" name="clientip1"/>
+                                            <input  type="text" class="form-control" name="clientip1" value="<?= htmlspecialchars($fetchsuerData['u_client_ip_1']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Client IP 2</label>
-                                            <input required type="text" class="form-control" name="clientip2"/>
+                                            <input  type="text" class="form-control" name="clientip2" value="<?= htmlspecialchars($fetchsuerData['u_client_ip_2']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Client IP 3</label>
-                                            <input required type="text" class="form-control" name="clientip3"/>
+                                            <input  type="text" class="form-control" name="clientip3" value="<?= htmlspecialchars($fetchsuerData['u_client_ip_3']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Client IP 4</label>
-                                            <input required type="text" class="form-control" name="clientip4"/>
+                                            <input  type="text" class="form-control" name="clientip4" value="<?= htmlspecialchars($fetchsuerData['u_client_ip_4']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Company</label>
-                                            <input required type="text" class="form-control" name="company"/>
+                                            <input  type="text" class="form-control" name="company" value="<?= htmlspecialchars($fetchsuerData['u_company']) ?>"/>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Telephone</label>
-                                            <input required type="text" class="form-control" name="telephone"/>
+                                            <input  type="text" class="form-control" name="telephone" value="<?= htmlspecialchars($fetchsuerData['u_telephone']) ?>"/>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="input-title">Address</label>
-                                            <input required type="text" class="form-control" name="address"/>
+                                            <input  type="text" class="form-control" name="address" value="<?= htmlspecialchars($fetchsuerData['u_address']) ?>"/>
                                         </div>
                                     </div>
                                     <h4><b>Permissions</b></h4>
@@ -126,12 +213,14 @@
                                         <div class="col-md-2 mb-3">
                                             <label class="input-title">Import</label>
                                             <div class="custom-control custom-checkbox">
-                                                <input name="importavailability" value="ida" type="checkbox" class="custom-control-input" id="customCheck1" data-parsley-multiple="groups" data-parsley-mincheck="2">
-                                                <label class="custom-control-label" for="customCheck1">Data Availability</label>
+                                                <input name="importavailability" type="checkbox" class="custom-control-input" id="importAvailability" 
+                                                <?php if(isset($permissions['Import'])) echo 'checked'; ?>>
+                                                <label class="custom-control-label" for="importAvailability">Data Availability</label>
                                             </div>
                                             <div class="custom-control custom-checkbox">
-                                                <input name="importprint" value="idp" type="checkbox" class="custom-control-input" id="customCheck1" data-parsley-multiple="groups" data-parsley-mincheck="2">
-                                                <label class="custom-control-label" for="customCheck1">Data Print</label>
+                                                <input name="importprint" type="checkbox" class="custom-control-input" id="importPrint"
+                                                <?php if(isset($permissions['Import']) && $permissions['Import']['up_print'] == 1) echo 'checked'; ?>>
+                                                <label class="custom-control-label" for="importPrint">Data Print</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3 mb-3">
@@ -144,14 +233,18 @@
                                         </div>
                                         <div class="col-md-4"></div>
                                         <div class="col-md-2 mb-3">
-                                            <label class="input-title">Emport</label>
+                                            <label class="input-title">Export</label>
+
                                             <div class="custom-control custom-checkbox">
-                                                <input name="exportavailability" value="eda" type="checkbox" class="custom-control-input" id="customCheck1" data-parsley-multiple="groups" data-parsley-mincheck="2">
-                                                <label class="custom-control-label" for="customCheck1">Data Availability</label>
+                                                <input name="exportavailability" type="checkbox" class="custom-control-input" id="exportAvailability"
+                                                <?php if(isset($permissions['Export'])) echo 'checked'; ?>>
+                                                <label class="custom-control-label" for="exportAvailability">Data Availability</label>
                                             </div>
+
                                             <div class="custom-control custom-checkbox">
-                                                <input name="exportprint" value="edp" type="checkbox" class="custom-control-input" id="customCheck1" data-parsley-multiple="groups" data-parsley-mincheck="2">
-                                                <label class="custom-control-label" for="customCheck1">Data Print</label>
+                                                <input name="exportprint" type="checkbox" class="custom-control-input" id="exportPrint"
+                                                <?php if(isset($permissions['Export']) && $permissions['Export']['up_print'] == 1) echo 'checked'; ?>>
+                                                <label class="custom-control-label" for="exportPrint">Data Print</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3 mb-3">
@@ -164,7 +257,11 @@
                                         </div>
                                         <div class="col-md-4"></div>
                                         <div class="col-md-12 text-start mt-3">
+                                            <?php if ($userID) { ?>
+                                            <button type="submit" name="update" class="btn btn-primary">Update User</button>
+                                            <?php } else { ?>
                                             <button type="submit" class="btn btn-primary" name="create">Create Account</button>
+                                            <?php } ?>
                                         </div>
                                     </div>
                                 </form>
@@ -194,18 +291,71 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                            <td>XXX</td>
-                                        </tr>
+                                        <?php
+                                        $userQuery = mysqli_query($con,"
+                                            SELECT 
+                                                u.u_id,
+                                                u.u_name,
+                                                u.u_email,
+                                                u.u_username,
+                                                u.u_company,
+                                                u.u_telephone,
+                                                u.u_address,
+                                                u.u_client_ip_1,
+                                                u.u_client_ip_2,
+                                                u.u_client_ip_3,
+                                                u.u_client_ip_4,
+                                                GROUP_CONCAT(
+                                                    CONCAT(
+                                                        up.up_type,
+                                                        ' (', up.up_from, ' - ', up.up_till, ')',
+                                                        IF(up.up_print = 1, ' [Print]', '')
+                                                    )
+                                                    SEPARATOR '<br>'
+                                                ) AS permissions
+                                            FROM users u
+                                            LEFT JOIN user_permissions up 
+                                                ON up.up_user = u.u_id
+                                            GROUP BY u.u_id
+                                        ");
+                                        while ($fetchUsers = mysqli_fetch_assoc($userQuery)) {
+                                        ?>
+                                            <tr>
+                                                <td>
+                                                    <a href="create-account.php?userID=<?= $fetchUsers['u_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                                                    <form method="post" style="display:inline;"
+                                                        onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                                        <input type="hidden" name="user_id" value="<?= $fetchUsers['u_id'] ?>">
+                                                        <button type="submit" name="delete_user" class="btn btn-sm btn-danger">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+
+                                                <td><?= $fetchUsers['u_id'] ?></td>
+                                                <td><?= htmlspecialchars($fetchUsers['u_name']) ?></td>
+                                                <td><?= htmlspecialchars($fetchUsers['u_email']) ?></td>
+
+                                                <td>
+                                                    <strong>User:</strong> <?= htmlspecialchars($fetchUsers['u_username']) ?>
+                                                </td>
+
+                                                <td>
+                                                    <?= $fetchUsers['permissions'] ? $fetchUsers['permissions'] : 'No Permissions' ?>
+                                                </td>
+
+                                                <td>
+                                                    <?= $fetchUsers['u_client_ip_1'] ?><br>
+                                                    <?= $fetchUsers['u_client_ip_2'] ?><br>
+                                                    <?= $fetchUsers['u_client_ip_3'] ?><br>
+                                                    <?= $fetchUsers['u_client_ip_4'] ?>
+                                                </td>
+
+                                                <td><?= htmlspecialchars($fetchUsers['u_company']) ?></td>
+                                                <td><?= htmlspecialchars($fetchUsers['u_telephone']) ?></td>
+                                                <td><?= htmlspecialchars($fetchUsers['u_address']) ?></td>
+                                            </tr>
+                                        <?php } ?>
                                     </tbody>
                                 </table>
                             </div>

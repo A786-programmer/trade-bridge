@@ -6,8 +6,8 @@
     $currentDateTime = date('Y-m-d h:i:s');  
     date_default_timezone_set('Asia/Karachi');
     $websiteName = 'TRADEBRIDGE';
-    // error_reporting(0);
+    error_reporting(0);
 
-    $user = mysqli_query($con,"SELECT * FROM users WHERE u_id = '$_SESSION[TPUser]'");
+    $user = mysqli_query($con,"SELECT * FROM users WHERE u_id = '$_SESSION[TradeUser]'");
     $fetchUser = mysqli_fetch_assoc($user);
 ?>
