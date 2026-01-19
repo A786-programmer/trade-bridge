@@ -15,6 +15,15 @@
                 $telephone = $_POST['telephone'];
                 $address = $_POST['address'];
 
+                $checkUser = mysqli_query($con, "SELECT u_id FROM users WHERE u_username = '$username'");
+
+                if (mysqli_num_rows($checkUser) > 0) {
+                    $_SESSION['toastr_message'] = "Username already exists!";
+                    $_SESSION['toastr_type'] = "error";
+                    header("Location: create-account.php");
+                    exit();
+                }
+
                 $addUser = mysqli_query($con, "INSERT INTO `users` (u_username, u_password, u_name, u_company, u_address, u_telephone, u_email, u_client_ip_1, u_client_ip_2, u_client_ip_3, u_client_ip_4) 
                 VALUES ('$username', '$password', '$name', '$company', '$address', '$telephone', '$email', '$clientip1', '$clientip2', '$clientip3', '$clientip4')");
 
@@ -225,11 +234,13 @@
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">From</label>
-                                            <input class="form-control" name="importfrom" type="month" value="" id="example-date-input">
+                                            <input class="form-control" name="importfrom" type="month"
+                                            value="<?= isset($permissions['Import']) ? htmlspecialchars($permissions['Import']['up_from']) : '' ?>">                                        
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Till</label>
-                                            <input class="form-control" name="importil" type="month" value="" id="example-date-input">
+                                            <input class="form-control" name="importil" type="month"
+                                            value="<?= isset($permissions['Import']) ? htmlspecialchars($permissions['Import']['up_till']) : '' ?>">                                        
                                         </div>
                                         <div class="col-md-4"></div>
                                         <div class="col-md-2 mb-3">
@@ -249,11 +260,13 @@
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">From</label>
-                                            <input class="form-control" name="exportfrom" type="month" value="" id="example-date-input">
+                                            <input class="form-control" name="exportfrom" type="month"
+                                            value="<?= isset($permissions['Export']) ? htmlspecialchars($permissions['Export']['up_from']) : '' ?>">                                        
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <label class="input-title">Till</label>
-                                            <input class="form-control" name="exportil" type="month" value="" id="example-date-input">
+                                            <input class="form-control" name="exportil" type="month"
+                                            value="<?= isset($permissions['Export']) ? htmlspecialchars($permissions['Export']['up_till']) : '' ?>">                                        
                                         </div>
                                         <div class="col-md-4"></div>
                                         <div class="col-md-12 text-start mt-3">
@@ -292,70 +305,76 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $userQuery = mysqli_query($con,"
-                                            SELECT 
-                                                u.u_id,
-                                                u.u_name,
-                                                u.u_email,
-                                                u.u_username,
-                                                u.u_company,
-                                                u.u_telephone,
-                                                u.u_address,
-                                                u.u_client_ip_1,
-                                                u.u_client_ip_2,
-                                                u.u_client_ip_3,
-                                                u.u_client_ip_4,
-                                                GROUP_CONCAT(
-                                                    CONCAT(
-                                                        up.up_type,
-                                                        ' (', up.up_from, ' - ', up.up_till, ')',
-                                                        IF(up.up_print = 1, ' [Print]', '')
-                                                    )
-                                                    SEPARATOR '<br>'
-                                                ) AS permissions
-                                            FROM users u
-                                            LEFT JOIN user_permissions up 
-                                                ON up.up_user = u.u_id
-                                            GROUP BY u.u_id
-                                        ");
-                                        while ($fetchUsers = mysqli_fetch_assoc($userQuery)) {
+                                            $sno = 1;
+                                            $userQuery = mysqli_query($con,"
+                                                SELECT 
+                                                    u.u_id,
+                                                    u.u_name,
+                                                    u.u_email,
+                                                    u.u_username,
+                                                    u.u_company,
+                                                    u.u_telephone,
+                                                    u.u_address,
+                                                    u.u_password,
+                                                    u.u_client_ip_1,
+                                                    u.u_client_ip_2,
+                                                    u.u_client_ip_3,
+                                                    u.u_client_ip_4,
+                                                    GROUP_CONCAT(
+                                                        CONCAT(
+                                                            up.up_type,
+                                                            ' (', up.up_from, ' - ', up.up_till, ')',
+                                                            IF(up.up_print = 1, ' [Print]', '')
+                                                        )
+                                                        SEPARATOR '<br>'
+                                                    ) AS permissions
+                                                FROM users u
+                                                LEFT JOIN user_permissions up 
+                                                    ON up.up_user = u.u_id
+                                                GROUP BY u.u_id
+                                            ");
+                                            while ($fetchUsers = mysqli_fetch_assoc($userQuery)) {
                                         ?>
-                                            <tr>
-                                                <td>
-                                                    <a href="create-account.php?userID=<?= $fetchUsers['u_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
-                                                    <form method="post" style="display:inline;"
-                                                        onsubmit="return confirm('Are you sure you want to delete this user?')">
-                                                        <input type="hidden" name="user_id" value="<?= $fetchUsers['u_id'] ?>">
-                                                        <button type="submit" name="delete_user" class="btn btn-sm btn-danger">
-                                                            Delete
-                                                        </button>
-                                                    </form>
-                                                </td>
+                                        <tr>
+                                            <td>
+                                                <a href="create-account.php?userID=<?= $fetchUsers['u_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                                                <form method="post" style="display:inline;"
+                                                    onsubmit="return confirm('Are you sure you want to delete this user?')">
+                                                    <input type="hidden" name="user_id" value="<?= $fetchUsers['u_id'] ?>">
+                                                    <button type="submit" name="delete_user" class="btn btn-sm btn-danger">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </td>
 
-                                                <td><?= $fetchUsers['u_id'] ?></td>
-                                                <td><?= htmlspecialchars($fetchUsers['u_name']) ?></td>
-                                                <td><?= htmlspecialchars($fetchUsers['u_email']) ?></td>
+                                            <td><?= $sno ?></td>
+                                            <td><?= htmlspecialchars($fetchUsers['u_name']) ?></td>
+                                            <td><?= htmlspecialchars($fetchUsers['u_email']) ?></td>
 
-                                                <td>
-                                                    <strong>User:</strong> <?= htmlspecialchars($fetchUsers['u_username']) ?>
-                                                </td>
+                                            <td>
+                                                <strong>User:</strong> <?= htmlspecialchars($fetchUsers['u_username']) ?>
+                                                <br><strong>Password:</strong> <?= htmlspecialchars($fetchUsers['u_password']) ?>
+                                            </td>
 
-                                                <td>
-                                                    <?= $fetchUsers['permissions'] ? $fetchUsers['permissions'] : 'No Permissions' ?>
-                                                </td>
+                                            <td>
+                                                <?= $fetchUsers['permissions'] ? $fetchUsers['permissions'] : 'No Permissions' ?>
+                                            </td>
 
-                                                <td>
-                                                    <?= $fetchUsers['u_client_ip_1'] ?><br>
-                                                    <?= $fetchUsers['u_client_ip_2'] ?><br>
-                                                    <?= $fetchUsers['u_client_ip_3'] ?><br>
-                                                    <?= $fetchUsers['u_client_ip_4'] ?>
-                                                </td>
+                                            <td>
+                                                <?= $fetchUsers['u_client_ip_1'] ?><br>
+                                                <?= $fetchUsers['u_client_ip_2'] ?><br>
+                                                <?= $fetchUsers['u_client_ip_3'] ?><br>
+                                                <?= $fetchUsers['u_client_ip_4'] ?>
+                                            </td>
 
-                                                <td><?= htmlspecialchars($fetchUsers['u_company']) ?></td>
-                                                <td><?= htmlspecialchars($fetchUsers['u_telephone']) ?></td>
-                                                <td><?= htmlspecialchars($fetchUsers['u_address']) ?></td>
-                                            </tr>
-                                        <?php } ?>
+                                            <td><?= htmlspecialchars($fetchUsers['u_company']) ?></td>
+                                            <td><?= htmlspecialchars($fetchUsers['u_telephone']) ?></td>
+                                            <td><?= htmlspecialchars($fetchUsers['u_address']) ?></td>
+                                        </tr>
+                                        <?php 
+                                                $sno++;
+                                            }
+                                        ?>
                                     </tbody>
                                 </table>
                             </div>
