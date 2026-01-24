@@ -30,48 +30,57 @@
                         <div class="card">
                             <div class="card-body"> 
                                 <h4 class="mt-0 header-title">Export</h4>                      
-                                <form action="" method="post" enctype="multipart/form-data">
+                                <form id="exportSearchForm">
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Port Of shipping</label>
-                                            <select required class="form-control" name="cargo_type">
+                                            <label>Port Of Shipping</label>
+                                            <select class="form-control" name="port">
                                                 <option value="">---ALL---</option>
-                                                <option value="LCL">LCL</option>
-                                                <option value="FCL">FCL</option>
-                                            </select>                                        
+                                                <option value="Karachi">Karachi</option>
+                                                <option value="Port Qasim">Port Qasim</option>
+                                            </select>
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Good Description</label>
-                                            <input required type="text" class="form-control" name="password"/>
+                                            <label>Vessel Name</label>
+                                            <input type="text" class="form-control" name="vessels">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Importer Name</label>
-                                            <input required type="text" class="form-control" name="clientip1"/>
+                                            <label>Goods Description</label>
+                                            <input type="text" class="form-control" name="goods">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Shipper Name</label>
-                                            <input required type="text" class="form-control" name="clientip2"/>
+                                            <label>Importer Name</label>
+                                            <input type="text" class="form-control" name="importer">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Shipper Line</label>
-                                            <input required type="text" class="form-control" name="clientip4"/>
+                                            <label>Shipper Name</label>
+                                            <input type="text" class="form-control" name="shipperName">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Discharge</label>
-                                            <input required type="text" class="form-control" name="company"/>
+                                            <label>Shipper Agent</label>
+                                            <input type="text" class="form-control" name="shipperAgent">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Country</label>
-                                            <input required type="text" class="form-control" name="telephone"/>
+                                            <label>Shipping Line</label>
+                                            <input type="text" class="form-control" name="shippingLine">
                                         </div>
                                         <div class="col-md-3 mb-3">
-                                            <label class="input-title">Region</label>
-                                            <input required type="text" class="form-control" name="address"/>
+                                            <label>Discharge Port</label>
+                                            <input type="text" class="form-control" name="dischargePort">
                                         </div>
-                                    </div>
-                                        <div class="col-md-4"></div>
-                                        <div class="col-md-12 text-start mt-3">
-                                            <button type="submit" class="btn btn-primary" name="create">Search</button>
+
+                                        <div class="col-md-3 mb-3">
+                                            <label>Country</label>
+                                            <input type="text" class="form-control" name="country">
+                                        </div>
+
+                                        <div class="col-md-3 mb-3">
+                                            <label>Region</label>
+                                            <input type="text" class="form-control" name="region">
+                                        </div>
+
+                                        <div class="col-md-12 mt-3">
+                                            <button type="submit" class="btn btn-primary">Search</button>
                                         </div>
                                     </div>
                                 </form>
@@ -86,31 +95,20 @@
                                     style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>Actions</th>
                                             <th>ID</th>
                                             <th>Sb Date</th>
-                                            <th>Exporter</th>
+                                            <th>Export</th>
                                             <th>Expoter Address</th>
                                             <th>Importer</th>
                                             <th>Importer Address</th>
                                             <th>Shipping Line</th>
                                             <th>Dest Port Country Region</th>
                                             <th>GRWT (Mt)</th>
+                                            <th>Quantity/Qtyunit</th>
                                             <th>Goods</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <td>1</td>
-                                        <td>2</td>
-                                        <td>3</td>
-                                        <td>4</td>
-                                        <td>5</td>
-                                        <td>6</td>
-                                        <td>7</td>
-                                        <td>8</td>
-                                        <td>9</td>
-                                        <td>10</td>
-                                        <td>11</td>
+                                    <tbody id="exportTableBody">
                                     </tbody>
                                 </table>
                             </div>
@@ -122,6 +120,27 @@
         <?php include 'footer.php' ?>
     </body>
 </html>
+<script>
+    $("#exportSearchForm").on("submit", function (e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+
+        $.ajax({
+            url: "ajax/export-search.php",
+            type: "POST",
+            data: formData,
+            success: function (response) {
+                // sirf tbody update karo
+                $("#exportTableBody").html(response);
+            },
+            error: function (xhr, status, error) {
+                $("#exportTableBody").html(
+                    "<tr><td colspan='11' class='text-danger text-center'>Error loading data: " + error + "</td></tr>"
+                );
+            }
+        });
+    });
+</script>
 <?php
     } else {
         $_SESSION['toastr_message'] = "Invalid Access";
